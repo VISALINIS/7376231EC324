@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["campus_notification/src/*"]
+    }
+  }
+}
