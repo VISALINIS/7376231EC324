@@ -1,66 +1,239 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+
+import { useEffect, useState } from "react"
+
+import axios from "axios"
+
+import {
+  Container,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Stack
+} from "@mui/material"
 
 export default function Home() {
+
+  const [notifications, setNotifications] = useState([])
+
+  const [filter, setFilter] = useState("All")
+  const [readNotifications, setReadNotifications] = useState([])
+
+  useEffect(() => {
+
+    axios
+      .get("http://4.224.186.213/evaluation-service/notifications")
+      .then((res) => {
+
+        setNotifications(res.data.notifications)
+
+      })
+      .catch((err) => {
+
+  console.log(err)
+
+  setNotifications([
+    {
+      ID: "1",
+      Type: "Placement",
+      Message: "Google Hiring",
+      Timestamp: "2026-04-22"
+    },
+    {
+      ID: "2",
+      Type: "Result",
+      Message: "Semester Results Published",
+      Timestamp: "2026-04-23"
+    },
+    {
+      ID: "3",
+      Type: "Event",
+      Message: "Tech Fest Tomorrow",
+      Timestamp: "2026-04-24"
+    }
+  ])
+
+})
+
+  }, [])
+  const priorityOrder = {
+  Placement: 3,
+  Result: 2,
+  Event: 1
+}
+
+const topNotifications = [...notifications]
+  .sort((a, b) => {
+
+    return (
+      priorityOrder[b.Type] -
+      priorityOrder[a.Type]
+    )
+
+  })
+  .slice(0, 2)
+
+  const filteredNotifications =
+    filter === "All"
+      ? notifications
+      : notifications.filter(
+          (item) => item.Type === filter
+        )
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+
+    <Container maxWidth="md">
+
+      <Typography
+        variant="h3"
+        sx={{
+          marginTop: 4,
+          marginBottom: 4,
+          textAlign: "center"
+        }}
+      >
+        Campus Notifications
+      </Typography>
+
+      <Typography
+  variant="h5"
+  sx={{
+    marginBottom: 2
+  }}
+>
+  Top Priority Notifications
+</Typography>
+
+{
+  topNotifications.map((item) => (
+
+   <Card
+      key={item.ID}
+      sx={{
+        marginBottom: 2,
+        backgroundColor: "#1976d2",
+        color: "white"
+      }}
+    >
+
+      <CardContent>
+
+        <Typography variant="h6">
+          {item.Type}
+        </Typography>
+
+        <Typography>
+          {item.Message}
+        </Typography>
+
+      </CardContent>
+
+    </Card>
+
+  ))
+}
+
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          marginBottom: 4,
+          flexWrap: "wrap"
+        }}
+      >
+
+        <Button
+          variant="contained"
+          onClick={() => setFilter("All")}
+        >
+          All
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={() => setFilter("Event")}
+        >
+          Event
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={() => setFilter("Result")}
+        >
+          Result
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={() => setFilter("Placement")}
+        >
+          Placement
+        </Button>
+
+      </Stack>
+
+      {
+        filteredNotifications.map((item) => (
+
+         <Card
+  key={item.ID}
+
+  onClick={() => {
+
+    if (
+      !readNotifications.includes(item.ID)
+    ) {
+
+      setReadNotifications([
+        ...readNotifications,
+        item.ID
+      ])
+
+    }
+
+  }}
+
+  sx={{
+
+    marginBottom: 3,
+
+    backgroundColor:
+
+      readNotifications.includes(item.ID)
+        ? "#bdbdbd"
+        : "white",
+
+    cursor: "pointer"
+
+  }}
+>
+          
+
+            <CardContent>
+
+              <Typography variant="h6">
+                {item.Type}
+              </Typography>
+
+              <Typography>
+                {item.Message}
+              </Typography>
+
+              <Typography variant="body2">
+
+                {item.Timestamp}
+
+              </Typography>
+
+            </CardContent>
+
+          </Card>
+
+        ))
+      }
+
+    </Container>
+
+  )
 }
